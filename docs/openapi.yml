@@ -1,0 +1,266 @@
+openapi: 3.0.3
+
+info:
+  title: laminas-todo-app API
+  description: PHP / Laminas MVC による Todo 管理 REST API
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: ローカル開発環境（Docker）
+
+tags:
+  - name: todos
+    description: Todo タスク管理
+
+paths:
+  /api/todos:
+    get:
+      tags:
+        - todos
+      summary: タスク一覧取得
+      operationId: listTodos
+      responses:
+        '200':
+          description: タスク一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Todo'
+              example:
+                data:
+                  - id: 1
+                    title: "サンプルタスク"
+                    description: "詳細説明"
+                    status: "pending"
+                    created_at: "2026-05-13T10:00:00+09:00"
+                    updated_at: "2026-05-13T10:00:00+09:00"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - todos
+      summary: タスク新規作成
+      operationId: createTodo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoInput'
+            example:
+              title: "新しいタスク"
+              description: "詳細説明（省略可）"
+              status: "pending"
+      responses:
+        '201':
+          description: 作成されたタスク
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Todo'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /api/todos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: タスクの ID
+        schema:
+          type: integer
+          minimum: 1
+        example: 1
+
+    get:
+      tags:
+        - todos
+      summary: タスク1件取得
+      operationId: getTodo
+      responses:
+        '200':
+          description: 指定 ID のタスク
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Todo'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    put:
+      tags:
+        - todos
+      summary: タスク更新
+      operationId: updateTodo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoInput'
+            example:
+              title: "更新後のタイトル"
+              description: "更新後の詳細"
+              status: "in_progress"
+      responses:
+        '200':
+          description: 更新されたタスク
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Todo'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - todos
+      summary: タスク削除
+      operationId: deleteTodo
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Todo deleted successfully"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    Todo:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 自動採番 ID
+          readOnly: true
+          example: 1
+        title:
+          type: string
+          description: タスクタイトル
+          maxLength: 255
+          example: "サンプルタスク"
+        description:
+          type: string
+          description: タスクの詳細説明
+          nullable: true
+          example: "詳細説明テキスト"
+        status:
+          $ref: '#/components/schemas/TodoStatus'
+        created_at:
+          type: string
+          format: date-time
+          description: 作成日時（自動設定）
+          readOnly: true
+          example: "2026-05-13T10:00:00+09:00"
+        updated_at:
+          type: string
+          format: date-time
+          description: 更新日時（自動設定）
+          readOnly: true
+          example: "2026-05-13T10:00:00+09:00"
+
+    TodoInput:
+      type: object
+      required:
+        - title
+        - status
+      properties:
+        title:
+          type: string
+          description: タスクタイトル
+          maxLength: 255
+          example: "新しいタスク"
+        description:
+          type: string
+          description: タスクの詳細説明
+          nullable: true
+          example: "詳細説明テキスト"
+        status:
+          $ref: '#/components/schemas/TodoStatus'
+
+    TodoStatus:
+      type: string
+      description: タスクの進捗ステータス
+      enum:
+        - pending
+        - in_progress
+        - done
+      example: "pending"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: エラーメッセージ
+          example: "Resource not found"
+
+  responses:
+    NotFound:
+      description: 指定したリソースが見つからない
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Todo not found"
+
+    UnprocessableEntity:
+      description: バリデーションエラー
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Validation failed"
+              messages:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  title: "title is required"
+                  status: "status must be one of: pending, in_progress, done"
+
+    InternalServerError:
+      description: サーバー内部エラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Internal server error"
