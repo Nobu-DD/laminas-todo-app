@@ -1,0 +1,39 @@
+services:
+  php:
+    build:
+      context: ./docker/php
+    container_name: laminas_php
+    ports:
+      - "8080:80"
+    volumes:
+      - ./backend:/var/www/html
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: todo_db
+      DB_USER: todo_user
+      DB_PASSWORD: todo_pass
+
+  mysql:
+    image: mysql:8.0
+    container_name: laminas_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_DATABASE: todo_db
+      MYSQL_USER: todo_user
+      MYSQL_PASSWORD: todo_pass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
