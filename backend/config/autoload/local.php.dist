@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+// このファイルを local.php にコピーして環境に合わせて編集してください。
+// local.php は .gitignore で除外されています。
+
+return [
+    'db' => [
+        'host'     => 'mysql',
+        'database' => 'todo_db',
+        'username' => 'todo_user',
+        'password' => 'todo_pass',
+    ],
+];
