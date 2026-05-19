@@ -1,0 +1,31 @@
+{
+    "name": "laminas-todo-app/backend",
+    "description": "Laminas MVC REST API - Todo App",
+    "type": "project",
+    "require": {
+        "php": "^8.2",
+        "laminas/laminas-mvc": "^3.7",
+        "laminas/laminas-db": "^2.18",
+        "laminas/laminas-view": "^2.23",
+        "laminas/laminas-servicemanager": "^3.22",
+        "laminas/laminas-modulemanager": "^2.15",
+        "laminas/laminas-router": "^3.13",
+        "doctrine/migrations": "^3.8",
+        "doctrine/dbal": "^3.8"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "friendsofphp/php-cs-fixer": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Todo\\": "module/Todo/src/",
+            "Database\\Migrations\\": "migrations/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TodoTest\\": "module/Todo/test/"
+        }
+    }
+}
